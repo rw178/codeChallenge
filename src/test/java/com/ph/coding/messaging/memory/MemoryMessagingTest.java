@@ -385,4 +385,18 @@ public class MemoryMessagingTest extends MemoryMessagingTestBase
     checkMessages(listener2, "Hello");
     assertNotSame(listener1.messages.get(0), listener2.messages.get(0));
   }
+
+  @Test(expected=MessagingException.class)
+  public void testShutdown() throws Exception
+  {
+    final MessageSender sender = newSender("a");
+    final StoringListener listener1 = new StoringListener();
+    newReceiver("a", listener1);
+    sender.sendMessage(encode("Hello"));
+    messagingFactory.shutdown();
+
+    newSender("a");
+  }
+
+
 }
