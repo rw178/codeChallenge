@@ -1,10 +1,11 @@
 # codeChallenge
 
+##Notes
 ### Classes
 ####  `MemoryMessagingFactory`
 * the action of adding receivers/senders and shutting down share the same lock. If the shutdown function did not share the lock, it could lead to a `Topic` missing a shutdown command (see below for a better alternative)
 * `waitForMessages()` - adding a `isBusyProcessing` flag to `Topic` together with the existing `shouldBeShuttingDown` flag can provide 
-a mechanism to verify that there are no more unprocessed messages in any `Topic`. If the approach using queues below are implemented, the 
+a mechanism to verify that there are no more unprocessed messages in any `Topic`. If the approach using queues below is implemented, the 
 queue sizes can be used to check if there are still unprocessed messages.
 ####  `Topic`
 * the publishing and subsequent processing of a message (as well as the updating of the receiver list) 
