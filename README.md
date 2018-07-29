@@ -16,6 +16,6 @@ should be decoupled; e.g. messages could be pushed to a topic specific queue whe
 and push to the receivers.
 ### Other
 * if a more enterprise grade like solution is needed, classes from `java.net` such as `MulticastSocket` etc. could be used
-* adding a "shutdown" `Message` could be an effective way to signal to all processes to shutdown - this removes the locking required when shutting down (see above)
+* adding a "shutdown" `Message` could be an effective way to signal to all processes to shut down - this removes the locking required when shutting down (see above)
 * it might be useful to investigate if `Message` could be made immutable
 * code coverage was checked via Intellij
