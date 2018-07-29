@@ -9,11 +9,12 @@ a mechanism to verify that there are no more unprocessed messages in any `Topic`
 queue sizes can be used to check if there are still unprocessed messages.
 ####  `Topic`
 * the publishing and subsequent processing of a message (as well as the updating of the receiver list) 
-shares the same lock. Since the in memory implementation is to be used purely for testing, 
+share the same lock. Since the in memory implementation is to be used purely for testing, 
 the implementation was kept as simple as possible to enable easy debugging and testing.
-<br>If performance does become a requirement (e.g. to test throughput) the two actions
-should be decoupled; e.g. messages could be pushed to a topic specific queue where "processing" threads would then pick them from 
+<br>If performance does become a requirement (e.g. to test throughput) the actions
+should be decoupled; e.g. messages could be pushed to a topic specific queue where "processing" threads would then read them from 
 and push to the receivers.
+* the locking requried for shutdown could also be eliminated by the approach below
 ### Other
 * if a more enterprise grade like solution is needed, classes from `java.net` such as `MulticastSocket` etc. could be used
 * adding a "shutdown" `Message` could be an effective way to signal to all processes to shut down - this removes the locking required when shutting down (see above)
