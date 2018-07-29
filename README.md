@@ -1,6 +1,6 @@
 # codeChallenge
 
-## Notes
+Below are some notes regarding the classes and design decisions
 ### Classes
 ####  `MemoryMessagingFactory`
 * the action of adding receivers/senders and shutting down share the same lock. If the shutdown function did not share the lock, it could lead to a `Topic` missing a shutdown command (see below for a better alternative)
