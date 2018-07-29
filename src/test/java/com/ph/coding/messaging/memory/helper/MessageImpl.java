@@ -21,5 +21,6 @@ public class MessageImpl implements Message {
 
     @Override
     public void dispose() {
+        //Do required cleanup work
     }
 }

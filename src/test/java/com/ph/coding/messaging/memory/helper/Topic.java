@@ -8,7 +8,9 @@ import java.util.List;
 public class Topic {
     private final List<MessageReceiverImpl> receivers;
     private final String name;
-    private boolean shouldBeShuttingDown = false;
+    private boolean shouldBeShuttingDown = false; /*Making this volatile could be used to eliminate the
+    shared lock, but care should be taken to not "miss" a shutdown*/
+
 
     public Topic(String name) {
         this.name = name;
@@ -26,19 +28,19 @@ public class Topic {
         receivers.add(messageReceiver);
     }
 
-    public void publish(MessageImpl message) throws MessagingException {
+    public synchronized void publish(MessageImpl message) throws MessagingException {
         if (shouldBeShuttingDown) {
             throw new MessagingException("Topic is marked for shutdown, no more messages accepted");
         }
-        synchronized (this) {
-            for (MessageReceiverImpl receiver : receivers) {
-                receiver.getListener().onMessage(message.copy(), receiver.getTopic());
-            }
+        for (MessageReceiverImpl receiver : receivers) {
+            receiver.getListener().onMessage(message.copy(), receiver.getTopic());
         }
+
         message.dispose();
     }
 
-    public void shutdown() {
+
+    public synchronized void shutdown() {
         shouldBeShuttingDown = true;
     }
 }

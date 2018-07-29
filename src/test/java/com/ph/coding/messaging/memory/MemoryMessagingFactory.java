@@ -1,16 +1,20 @@
 package com.ph.coding.messaging.memory;
 
-import com.ph.coding.messaging.*;
+import com.ph.coding.messaging.MessageReceiver;
+import com.ph.coding.messaging.MessageSender;
+import com.ph.coding.messaging.MessagingException;
+import com.ph.coding.messaging.MessagingFactory;
 import com.ph.coding.messaging.memory.helper.MessageReceiverImpl;
 import com.ph.coding.messaging.memory.helper.MessageSenderImpl;
 import com.ph.coding.messaging.memory.helper.Topic;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
 
 public class MemoryMessagingFactory implements MessagingFactory {
 
-    private final ConcurrentHashMap<String, Topic> map = new ConcurrentHashMap<>();
-    private boolean shouldBeShuttingDown = false;
+    private final HashMap<String, Topic> map = new HashMap<>();
+    private boolean shouldBeShuttingDown = false; /*Making this volatile could be used to eliminate the
+    shared lock, but care should be taken to not "miss" a shutdown*/
 
     @Override
     public String getProviderName() {
@@ -19,28 +23,35 @@ public class MemoryMessagingFactory implements MessagingFactory {
 
     @Override
     public void shutdown() throws Exception {
-        shouldBeShuttingDown = true;
-        for (Topic topic : map.values()) {
-            topic.shutdown();
+        //We don't want a topic to miss a shutdown, so synchronize access with methods that modify the topic map
+        synchronized (this) {
+            shouldBeShuttingDown = true;
+            for (Topic topic : map.values()) {
+                topic.shutdown();
+            }
         }
     }
 
     @Override
     public MessageSender createSender(final String topic) throws MessagingException {
-        if (shouldBeShuttingDown) {
-            throw new MessagingException("Messaging service is shutting down, no more senders can be added.");
+        synchronized (this) {
+            if (shouldBeShuttingDown) {
+                throw new MessagingException("Messaging service is shutting down, no more senders can be added.");
+            }
+            map.putIfAbsent(topic, new Topic(topic));
+            return new MessageSenderImpl(map.get(topic));
         }
-        map.putIfAbsent(topic, new Topic(topic));
-        return new MessageSenderImpl(map.get(topic));
     }
 
     @Override
     public MessageReceiver createReceiver(final String topic) throws MessagingException {
-        if (shouldBeShuttingDown) {
-            throw new MessagingException("Messaging service is shutting down, no more receivers can be added.");
+        synchronized (this) {
+            if (shouldBeShuttingDown) {
+                throw new MessagingException("Messaging service is shutting down, no more receivers can be added.");
+            }
+            map.putIfAbsent(topic, new Topic(topic));
+            return new MessageReceiverImpl(map.get(topic));
         }
-        map.putIfAbsent(topic, new Topic(topic));
-        return new MessageReceiverImpl(map.get(topic));
     }
 
     /**
