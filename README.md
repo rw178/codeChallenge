@@ -14,9 +14,9 @@ the implementation was kept as simple as possible to enable easy debugging and t
 <br>If performance does become a requirement (e.g. to test throughput) the actions
 should be decoupled; e.g. messages could be pushed to a topic specific queue where "processing" threads would then read them from 
 and push to the receivers.
-* the approach below can also be employed to remove the locking required when shutting down
+* see below for an approach to elimate the locking required when shutting down
 ### Other
 * if a more enterprise grade like solution is needed, classes from `java.net` such as `MulticastSocket` etc. could be used
-* adding a "shutdown" `Message` could be an effective way to signal to all processes to shut down - this removes the locking required when shutting down (see above)
+* adding a "shutdown" `Message` (together with a timeout) could be an effective way to signal to all processes to shut down - this removes the locking required when shutting down (see above).
 * it might be useful to investigate if `Message` could be made immutable
 * code coverage was checked via Intellij
